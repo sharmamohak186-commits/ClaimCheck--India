@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClaimCheck India — Evidence-first FSSAI claim verifier</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <svg class="brand__seal" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" stroke="#EDE8DC" stroke-width="1.4"/>
+      <circle cx="20" cy="20" r="13" stroke="#EDE8DC" stroke-width="0.8" stroke-dasharray="2 3"/>
+      <path d="M12 20.5L17 25.5L28 13" stroke="#6FA88A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="brand__text">
+      <h1>ClaimCheck India</h1>
+      <p>evidence-first FSSAI claim verifier</p>
+    </div>
+  </div>
+  <div class="header-tag">Academic prototype — not a legal certification system</div>
+</header>
+
+<main class="workspace">
+
+  <!-- ===================== LEFT: INTAKE ===================== -->
+  <section class="panel" id="intake-panel">
+    <div class="panel__head">
+      <h2>Intake</h2>
+      <span id="evidence-count">0 fields captured</span>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="gtin">GTIN</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="scan">Barcode scan</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="link">OFF link</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="photos">Label photos</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="manual">Manual entry</button>
+    </div>
+
+    <div class="panel__body">
+
+      <!-- GTIN -->
+      <div class="tab-panel active" data-tab-panel="gtin">
+        <label for="gtin-input">GTIN / barcode number</label>
+        <input type="text" id="gtin-input" placeholder="e.g. 8901234567890" inputmode="numeric" />
+        <div class="btn-row">
+          <button class="btn" id="gtin-lookup-btn">Look up product</button>
+          <button class="btn btn--ghost" id="gtin-demo-btn" type="button">Try a demo GTIN</button>
+        </div>
+        <p class="helper-text">Looks up the product on Open Food Facts and pre-fills nutrition evidence below. You can still edit any value before running a check.</p>
+        <div class="status-line" id="gtin-status"></div>
+      </div>
+
+      <!-- BARCODE SCAN -->
+      <div class="tab-panel" data-tab-panel="scan">
+        <div class="scan-viewport" id="scan-viewport"></div>
+        <div class="btn-row">
+          <button class="btn" id="scan-start-btn">Start camera scan</button>
+          <button class="btn btn--ghost hidden" id="scan-stop-btn">Stop</button>
+        </div>
+        <p class="helper-text">Requires camera access. Point the camera at the product barcode; once a valid code is detected, the product is looked up automatically.</p>
+        <div class="status-line" id="scan-status"></div>
+      </div>
+
+      <!-- OFF LINK -->
+      <div class="tab-panel" data-tab-panel="link">
+        <label for="link-input">Open Food Facts product-page link</label>
+        <input type="url" id="link-input" placeholder="https://world.openfoodfacts.org/product/..." />
+        <div class="btn-row">
+          <button class="btn" id="link-lookup-btn">Fetch from link</button>
+        </div>
+        <p class="helper-text">Paste a product page URL from openfoodfacts.org — the barcode embedded in the link is used to fetch evidence.</p>
+        <div class="status-line" id="link-status"></div>
+      </div>
+
+      <!-- PHOTOS / OCR -->
+      <div class="tab-panel" data-tab-panel="photos">
+        <div class="dropzones">
+          <div class="dropzone">
+            <div class="dropzone__thumb" id="thumb-front"></div>
+            <div class="dropzone__meta"><strong>Front-of-pack</strong><span>photo of the product front with the claim printed</span></div>
+            <input type="file" accept="image/*" id="file-front" />
+          </div>
+          <div class="dropzone">
+            <div class="dropzone__thumb" id="thumb-ingredients"></div>
+            <div class="dropzone__meta"><strong>Ingredients list</strong><span>OCR-read, then reviewable below</span></div>
+            <input type="file" accept="image/*" id="file-ingredients" />
+          </div>
+          <div class="dropzone">
+            <div class="dropzone__thumb" id="thumb-nutrition"></div>
+            <div class="dropzone__meta"><strong>Nutrition table</strong><span>OCR-read, then reviewable below</span></div>
+            <input type="file" accept="image/*" id="file-nutrition" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="ocr-run-btn">Upload &amp; run OCR</button>
+        </div>
+        <div class="status-line" id="ocr-status"></div>
+        <label for="ocr-raw-text" style="margin-top:14px;">Raw OCR text (review before trusting)</label>
+        <textarea id="ocr-raw-text" placeholder="Extracted text will appear here for you to check against the photo..."></textarea>
+        <p class="helper-text">OCR is run in your browser (Tesseract.js). Image quality, glare, and label layout affect accuracy — always compare against the photo, then correct the Manual entry tab before running a check.</p>
+      </div>
+
+      <!-- MANUAL -->
+      <div class="tab-panel" data-tab-panel="manual">
+        <label for="m-physicalState">Physical state</label>
+        <select id="m-physicalState">
+          <option value="solid">Solid</option>
+          <option value="liquid">Liquid</option>
+        </select>
+
+        <div class="field-row">
+          <div>
+            <label for="m-energy">Energy (kcal / 100g or 100ml)</label>
+            <input type="number" id="m-energy" step="0.1" />
+          </div>
+          <div>
+            <label for="m-protein">Protein (g / 100g or 100ml)</label>
+            <input type="number" id="m-protein" step="0.1" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label for="m-fat">Fat (g / 100g or 100ml)</label>
+            <input type="number" id="m-fat" step="0.1" />
+          </div>
+          <div>
+            <label for="m-satfat">Saturated fat (g / 100g or 100ml)</label>
+            <input type="number" id="m-satfat" step="0.1" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label for="m-transfat">Trans fat (g / 100g or 100ml)</label>
+            <input type="number" id="m-transfat" step="0.01" />
+          </div>
+          <div>
+            <label for="m-sugar">Sugar (g / 100g or 100ml)</label>
+            <input type="number" id="m-sugar" step="0.1" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label for="m-fiber">Fiber (g / 100g or 100ml)</label>
+            <input type="number" id="m-fiber" step="0.1" />
+          </div>
+          <div>
+            <label for="m-sodium">Sodium (mg / 100g or 100ml)</label>
+            <input type="number" id="m-sodium" step="1" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label for="m-cholesterol">Cholesterol (mg / 100g or 100ml)</label>
+            <input type="number" id="m-cholesterol" step="0.1" />
+          </div>
+          <div>
+            <label for="m-name">Product name (optional)</label>
+            <input type="text" id="m-name" />
+          </div>
+        </div>
+        <label for="m-ingredients">Ingredients list (full text, for "No Added Sugar")</label>
+        <textarea id="m-ingredients" placeholder="Paste or type the full ingredients list..."></textarea>
+
+        <div class="btn-row">
+          <button class="btn" id="manual-apply-btn">Apply to evidence</button>
+        </div>
+        <div class="status-line" id="manual-status"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== RIGHT: VERDICT LEDGER ===================== -->
+  <section class="panel" id="ledger-panel">
+    <div class="panel__head">
+      <h2>Claim &amp; verdict ledger</h2>
+      <span id="claim-count">— claims loaded</span>
+    </div>
+    <div class="panel__body">
+
+      <div id="product-summary"></div>
+
+      <div class="ledger-section">
+        <h3>1. Select a claim to verify</h3>
+        <div class="claim-grid" id="claim-grid"></div>
+        <div id="reference-box-holder"></div>
+      </div>
+
+      <div class="ledger-section">
+        <button class="btn" id="run-check-btn" disabled>Run check</button>
+        <div class="status-line" id="verify-status"></div>
+      </div>
+
+      <div id="verdict-output"></div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  ClaimCheck India — academic prototype · rules engine references FSSAI Advertising &amp; Claims Regulations, 2018 · verify against the latest official notification before any real-world use
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

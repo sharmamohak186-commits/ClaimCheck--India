@@ -1,0 +1,230 @@
+{
+  "meta": {
+    "source": "FSSAI (Food Safety and Standards Authority of India) Advertising & Claims Regulations, 2018 and related nutrition labelling notifications.",
+    "reference_url": "https://www.fssai.gov.in/food-law/regulations",
+    "compendium_url": "https://www.fssai.gov.in/upload/uploadfiles/files/Compendium_Advertising_Claims_Regulations_04_10_2022.pdf",
+    "disclaimer": "Threshold values below are encoded from publicly available FSSAI/Codex-aligned reference points for academic prototype use. Before any real-world use, each threshold must be re-verified against the latest official FSSAI notification, as regulations are periodically amended.",
+    "last_reviewed": "2026-09-08"
+  },
+  "claims": [
+    {
+      "id": "high_protein",
+      "label": "High Protein",
+      "category": "nutrient_content",
+      "requiredFields": ["protein_100g", "energy_kcal_100g", "physicalState"],
+      "description": "Protein content must supply a significant share of energy, or meet an absolute minimum per 100g/100ml.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          {
+            "explanation": "Protein supplies at least 20% of total energy value (protein kcal = protein_g * 4).",
+            "formula": "(protein_100g * 4 / energy_kcal_100g) * 100 >= 20"
+          },
+          {
+            "explanation": "Solid food: protein >= 10g per 100g.",
+            "formula": "physicalState == 'solid' && protein_100g >= 10"
+          },
+          {
+            "explanation": "Liquid food: protein >= 5g per 100ml.",
+            "formula": "physicalState == 'liquid' && protein_100g >= 5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "low_fat",
+      "label": "Low Fat",
+      "category": "nutrient_content",
+      "requiredFields": ["fat_100g", "physicalState"],
+      "description": "Fat content must be at or below the low-fat ceiling for the product's physical state.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          {
+            "explanation": "Solid food: fat <= 3g per 100g.",
+            "formula": "physicalState == 'solid' && fat_100g <= 3"
+          },
+          {
+            "explanation": "Liquid food: fat <= 1.5g per 100ml.",
+            "formula": "physicalState == 'liquid' && fat_100g <= 1.5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "no_added_sugar",
+      "label": "No Added Sugar",
+      "category": "ingredient_based",
+      "requiredFields": ["ingredientsText"],
+      "description": "No added sugars, syrups, or sweetening ingredients may appear in the ingredient list.",
+      "rule": {
+        "type": "ingredient_absence",
+        "bannedKeywords": [
+          "sugar", "sucrose", "glucose", "fructose", "dextrose", "maltose",
+          "honey", "syrup", "molasses", "jaggery", "corn syrup",
+          "fruit juice concentrate", "invert sugar", "malt extract", "caramel"
+        ],
+        "explanation": "Ingredient list must not contain any sugar or sweetener-type ingredient."
+      }
+    },
+    {
+      "id": "protein_30_more",
+      "label": "30% More Protein",
+      "category": "comparative",
+      "requiredFields": ["protein_100g", "reference_protein_100g"],
+      "description": "Comparative claim: product protein must exceed a stated reference/comparator product by at least 30%.",
+      "rule": {
+        "type": "comparative_increase",
+        "minPercentIncrease": 30,
+        "formula": "((protein_100g - reference_protein_100g) / reference_protein_100g) * 100 >= 30",
+        "explanation": "Percentage increase in protein vs. the named reference product must be >= 30%."
+      }
+    },
+    {
+      "id": "reduced_sodium",
+      "label": "Reduced Sodium",
+      "category": "comparative",
+      "requiredFields": ["sodium_100g", "reference_sodium_100g"],
+      "description": "Comparative claim: product sodium must be reduced by at least 25% versus a stated reference/comparator product.",
+      "rule": {
+        "type": "comparative_decrease",
+        "minPercentDecrease": 25,
+        "formula": "((reference_sodium_100g - sodium_100g) / reference_sodium_100g) * 100 >= 25",
+        "explanation": "Percentage reduction in sodium vs. the named reference product must be >= 25%."
+      }
+    },
+    {
+      "id": "low_sodium",
+      "label": "Low Sodium",
+      "category": "nutrient_content",
+      "requiredFields": ["sodium_100g"],
+      "description": "Sodium must be at or below the low-sodium ceiling.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Sodium <= 120mg per 100g.", "formula": "sodium_100g <= 120" }
+        ]
+      }
+    },
+    {
+      "id": "sodium_free",
+      "label": "Sodium Free",
+      "category": "nutrient_content",
+      "requiredFields": ["sodium_100g"],
+      "description": "Sodium must be negligible.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Sodium <= 5mg per 100g.", "formula": "sodium_100g <= 5" }
+        ]
+      }
+    },
+    {
+      "id": "low_sugar",
+      "label": "Low Sugar",
+      "category": "nutrient_content",
+      "requiredFields": ["sugar_100g", "physicalState"],
+      "description": "Sugar content must be at or below the low-sugar ceiling for the product's physical state.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Solid food: sugar <= 5g per 100g.", "formula": "physicalState == 'solid' && sugar_100g <= 5" },
+          { "explanation": "Liquid food: sugar <= 2.5g per 100ml.", "formula": "physicalState == 'liquid' && sugar_100g <= 2.5" }
+        ]
+      }
+    },
+    {
+      "id": "sugar_free",
+      "label": "Sugar Free",
+      "category": "nutrient_content",
+      "requiredFields": ["sugar_100g"],
+      "description": "Sugar content must be negligible.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Sugar <= 0.5g per 100g/100ml.", "formula": "sugar_100g <= 0.5" }
+        ]
+      }
+    },
+    {
+      "id": "fat_free",
+      "label": "Fat Free",
+      "category": "nutrient_content",
+      "requiredFields": ["fat_100g"],
+      "description": "Fat content must be negligible.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Fat <= 0.5g per 100g/100ml.", "formula": "fat_100g <= 0.5" }
+        ]
+      }
+    },
+    {
+      "id": "zero_trans_fat",
+      "label": "Zero Trans Fat",
+      "category": "nutrient_content",
+      "requiredFields": ["transFat_100g"],
+      "description": "Trans fat must be negligible.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Trans fat <= 0.2g per 100g/100ml.", "formula": "transFat_100g <= 0.2" }
+        ]
+      }
+    },
+    {
+      "id": "source_of_fiber",
+      "label": "Source of Fiber",
+      "category": "nutrient_content",
+      "requiredFields": ["fiber_100g"],
+      "description": "Fiber content must meet the minimum for a 'source of' claim.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Fiber >= 3g per 100g.", "formula": "fiber_100g >= 3" }
+        ]
+      }
+    },
+    {
+      "id": "high_fiber",
+      "label": "High Fiber",
+      "category": "nutrient_content",
+      "requiredFields": ["fiber_100g"],
+      "description": "Fiber content must meet the minimum for a 'high' claim.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Fiber >= 6g per 100g.", "formula": "fiber_100g >= 6" }
+        ]
+      }
+    },
+    {
+      "id": "low_calorie",
+      "label": "Low Calorie",
+      "category": "nutrient_content",
+      "requiredFields": ["energy_kcal_100g", "physicalState"],
+      "description": "Energy value must be at or below the low-calorie ceiling for the product's physical state.",
+      "rule": {
+        "type": "threshold_any_of",
+        "conditions": [
+          { "explanation": "Solid food: energy <= 40 kcal per 100g.", "formula": "physicalState == 'solid' && energy_kcal_100g <= 40" },
+          { "explanation": "Liquid food: energy <= 20 kcal per 100ml.", "formula": "physicalState == 'liquid' && energy_kcal_100g <= 20" }
+        ]
+      }
+    },
+    {
+      "id": "cholesterol_free",
+      "label": "Cholesterol Free",
+      "category": "nutrient_content",
+      "requiredFields": ["cholesterol_100g", "saturatedFat_100g"],
+      "description": "Cholesterol must be negligible and saturated fat must also be low.",
+      "rule": {
+        "type": "threshold_all_of",
+        "conditions": [
+          { "explanation": "Cholesterol <= 5mg per 100g.", "formula": "cholesterol_100g <= 5" },
+          { "explanation": "Saturated fat <= 1.5g per 100g.", "formula": "saturatedFat_100g <= 1.5" }
+        ]
+      }
+    }
+  ]
+}
